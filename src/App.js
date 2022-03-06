@@ -1,9 +1,11 @@
-import logo from './logo.svg';
-import './App.css';
+import logo from "./logo.svg";
+import "./App.css";
+import Game from "features/tic-tac-toe/components/Game";
 
 function App() {
   return (
     <div className="App">
+      <Game />
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
