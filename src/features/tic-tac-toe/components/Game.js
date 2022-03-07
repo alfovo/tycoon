@@ -1,8 +1,28 @@
 import React from "react";
-import ReactDOM from "react-dom";
 import "./game.css";
-import { calculateLocation, calculateWinner } from "./utils.js";
+import { calculateLocation, calculateWinner } from "../utils.js";
 import Board from "./Board";
+import Container from "@mui/material/Container";
+
+// accepts history, stepNumber and jumpTo
+function Moves(props) {
+  return props.history.map((step, historyIndex) => {
+    const desc = historyIndex
+      ? `Go to move #${historyIndex} in row ${step.location.row}, column ${step.location.column}`
+      : "Go to game start";
+    return (
+      <li key={historyIndex}>
+        <button onClick={() => props.jumpTo(historyIndex)}>
+          {historyIndex === props.stepNumber ? (
+            <div style={{ fontWeight: "bold" }}>{desc}</div>
+          ) : (
+            <div>{desc}</div>
+          )}
+        </button>
+      </li>
+    );
+  });
+}
 
 export default class Game extends React.Component {
   constructor(props) {
@@ -39,11 +59,12 @@ export default class Game extends React.Component {
   }
 
   // should rerender when this happens
-  jumpTo(step) {
-    this.setState({
-      stepNumber: step,
-      xIsNext: step % 2 === 0,
-    });
+  jumpTo(historyIndex) {
+    this.setState((state) => ({
+      stepNumber: historyIndex,
+      xIsNext: historyIndex % 2 === 0,
+      history: state.history.slice(0, historyIndex + 1),
+    }));
   }
 
   getStatus(winner) {
@@ -60,36 +81,27 @@ export default class Game extends React.Component {
     const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
 
-    const moves = history.map((step, move) => {
-      const desc = move
-        ? `Go to move #${move} in row ${step.location.row}, column ${step.location.column}`
-        : "Go to game start";
-      return (
-        <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>
-            {move === this.state.stepNumber ? (
-              <div style={{ fontWeight: "bold" }}>{desc}</div>
-            ) : (
-              <div>{desc}</div>
-            )}
-          </button>
-        </li>
-      );
-    });
-
     return (
-      <div className="game">
-        <div className="game-board">
-          <Board
-            squares={current.squares}
-            onClick={(i) => this.handleClick(i)}
-          />
+      <Container sx={{ paddingTop: "20px" }}>
+        <div className="game">
+          <div className="game-board">
+            <Board
+              squares={current.squares}
+              onClick={(i) => this.handleClick(i)}
+            />
+          </div>
+          <div className="game-info">
+            <div>{this.getStatus(winner)}</div>
+            <ol>
+              <Moves
+                history={history}
+                stepNumber={this.state.stepNumber}
+                jumpTo={(i) => this.jumpTo(i)}
+              />
+            </ol>
+          </div>
         </div>
-        <div className="game-info">
-          <div>{this.getStatus(winner)}</div>
-          <ol>{moves}</ol>
-        </div>
-      </div>
+      </Container>
     );
   }
 }
